@@ -6,6 +6,7 @@ public class CookingPreparation implements Preparation{
         System.out.println("Make sure you're ready:\n" +
                 "1. Buy necessary groceries\n" +
                 "2. Make sure all the necessary tools will be available" +
-                "3. Wash your hands!");
+                "3. Wash your hands!\n" +
+                "%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
     }
 }

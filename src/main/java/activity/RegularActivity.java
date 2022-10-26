@@ -11,9 +11,5 @@ public class RegularActivity extends Activity {
         super.printInfo();
     }
 
-    @Override
-    public String printAllInfo() {
-        return super.printAllInfo();
-    }
 
 }

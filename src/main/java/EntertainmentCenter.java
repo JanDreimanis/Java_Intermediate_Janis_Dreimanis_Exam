@@ -1,13 +1,13 @@
 import activity.GroupActivity;
 import activity.RegularActivity;
-import preparation.CookingPreparation;
-import preparation.DIYPreparation;
-import preparation.EducationPreparation;
-import preparation.RegularPreparation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
+import static common.GatherInformation.choosePrerequisites;
+import static helpers.FileHelper.saveGroupActivitiesRouteToFile;
+import static helpers.FileHelper.saveRegularActivitiesRouteToFile;
 import static helpers.RestApiHelper.*;
 
 public class EntertainmentCenter {
@@ -20,11 +20,7 @@ public class EntertainmentCenter {
 
     private final Scanner input = new Scanner(System.in);
 
-    public static HashMap<Integer, String> mapOfTypes = new HashMap<>();
-    CookingPreparation cookingPreparation = new CookingPreparation();
-    DIYPreparation diyPreparation = new DIYPreparation();
-    RegularPreparation regularPreparation = new RegularPreparation();
-    EducationPreparation educationPreparation = new EducationPreparation();
+    HashMap<Integer, String> mapOfTypes = new HashMap<>();
 
     {
         mapOfTypes.put(1, "recreational");
@@ -36,8 +32,8 @@ public class EntertainmentCenter {
         mapOfTypes.put(7, "music");
         mapOfTypes.put(8, "busywork");
         mapOfTypes.put(9, "education");
-    }
 
+    }
 
     void start() {
         welcome();
@@ -56,8 +52,7 @@ public class EntertainmentCenter {
 
         switch (userChoice) {
             case 1:
-                RegularActivity activity1 = createRegularActivityFromResponse(
-                        BORED_API_CALL_PREFIX + "activity/");
+                RegularActivity activity1 = createRegularActivityFromResponse(BORED_API_CALL_PREFIX + "activity/");
                 activity1.printInfo();
                 choosePrerequisites(activity1.getType());
                 break;
@@ -69,20 +64,18 @@ public class EntertainmentCenter {
                     counter++;
                 }
                 userChoice = input.nextInt();
-                RegularActivity activity2 = createRegularActivityFromResponse(
-                        BORED_API_CALL_PREFIX + "activity?type=" + mapOfTypes.get(userChoice));
+                RegularActivity activity2 = createRegularActivityFromResponse(BORED_API_CALL_PREFIX + "activity?type=" + mapOfTypes.get(userChoice));
                 activity2.printInfo();
                 choosePrerequisites(activity2.getType());
                 break;
             case 3:
-                System.out.print("Enter amount of participants: ");
+                System.out.print("Enter how many people want to participate in activity: ");
                 GroupActivity activity3 = null;
                 try {
                     userChoice = input.nextInt();
-                    activity3 = createGroupActivityFromResponse(
-                            BORED_API_CALL_PREFIX + "activity?participants=" + userChoice);
+                    activity3 = createGroupActivityFromResponse(BORED_API_CALL_PREFIX + "activity?participants=" + userChoice);
                 } catch (NullPointerException e) {
-                    System.out.println("\n\nLooks like this amount is not supported\n\n\n");
+                    System.out.println("\n\nLooks like this count of participants is not supported\n\n\n");
                     start();
                 }
 
@@ -91,39 +84,73 @@ public class EntertainmentCenter {
                 activity3.printInfo();
                 choosePrerequisites(activity3.getType());
                 break;
+            case 4:
+                System.out.println("Choose amount of activities.");
+                int amountOfActivities = input.nextInt();
+                System.out.println("Choose how many participants will participate.");
+                int participants = input.nextInt();
+                ArrayList<GroupActivity> groupActivities = new ArrayList<>();
+                ArrayList<RegularActivity> regularActivities = new ArrayList<>();
+
+                int counter1 = 1;
+                System.out.println("Choose one of these type of activities: ");
+                for (String type : mapOfTypes.values()) {
+                    System.out.println(counter1 + ": " + type);
+                    counter1++;
+                }
+                for (int i = 1; i <= amountOfActivities; i++) {
+                    userChoice = input.nextInt();
+                    try {
+                        if (participants > 1) {
+                            GroupActivity activity4 = createGroupActivityFromResponse(
+                                    BORED_API_CALL_PREFIX + "activity?participants=" + participants + "&type=" + mapOfTypes.get(userChoice));
+                            groupActivities.add(activity4);
+                        } else {
+                            RegularActivity activity5 = createRegularActivityFromResponse(
+                                    BORED_API_CALL_PREFIX + "activity?participants=1&type=" + mapOfTypes.get(userChoice));
+                            regularActivities.add(activity5);
+                        }
+                    } catch (NullPointerException e) {
+                        System.out.println(RED + "Looks like this combination of participants and types is not supported" + RESET + "\nChoose again:");
+                        i--;
+                    }
+                }
+                System.out.println("!*!*!*!*!*!*!*!*!*!*!*!*!*!*!");
+                saveGroupActivitiesRouteToFile(groupActivities);
+                saveRegularActivitiesRouteToFile(regularActivities);
+
+
         }
     }
 
-    public void choosePrerequisites(String type) {
-        switch (type) {
-            case "cooking":
-                cookingPreparation.listPrerequisites();
-                break;
-            case "diy":
-            case "busywork":
-                diyPreparation.listPrerequisites();
-                break;
-            case "education":
-                educationPreparation.listPrerequisites();
-                break;
-            case "recreational":
-            case "social":
-            case "charity":
-            case "music":
-            case "relaxation":
-                regularPreparation.listPrerequisites();
 
-        }
-
-    }
+//    public void choosePrerequisites(String type) {
+//        switch (type) {
+//            case "cooking":
+//                cookingPreparation.listPrerequisites();
+//                break;
+//            case "diy":
+//            case "busywork":
+//                diyPreparation.listPrerequisites();
+//                break;
+//            case "education":
+//                educationPreparation.listPrerequisites();
+//                break;
+//            case "recreational":
+//            case "social":
+//            case "charity":
+//            case "music":
+//            case "relaxation":
+//                regularPreparation.listPrerequisites();
+//
+//        }
+//
+//    }
 
 
     private void welcome() {
         System.out.println(PURPLE + "Welcome to Entertainment management system!\n\n" + RESET);
-        System.out.println(GREEN + "Enter 1 to view the random activity.\n" +
-                "Enter 2 to search activity by type.\n" +
-                "Enter 3 to search activity suitable for group.\n" +
-                "Enter 4 for Plan activities.\n" + RESET);
+        System.out.println(GREEN + "Enter 1 to view the random activity.\n" + "Enter 2 to search activity by type.\n" + "Enter 3 to search activity suitable for group.\n" + "Enter 4 for Plan activities.\n" + RESET);
 
         System.out.print("Choose an option from the list above: ");
     }
